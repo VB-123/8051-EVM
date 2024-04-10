@@ -1,9 +1,8 @@
 #include<reg51.h>
 #define msec 50
 #define msec_d 10
-#define lcd_data_str_pin P2 
+#define lcd_port P2 
 sbit rs = P3^0;  //Register select (RS) pin
-sbit rw = P3^1;  //Read write(RW) pin
 sbit en = P3^2;  //Enable(EN) pin
 sbit start_pin = P1^0; // Start voting pin
 sbit stop_pin = P1^5; // Stop voting pin
@@ -22,7 +21,8 @@ unsigned int vote_1,vote_2,vote_3,vote_4,winner;
 // Helper functions
 void delay(int delay_time);
 void lcd_cmd(unsigned char cmd);
-void lcd_str(char str[50]);
+void lcd_str(char *x);
+void lcd_data(unsigned char item);
 void lcd_data_int(unsigned int vote);
 void lcd_display();
 void vote_count();
@@ -35,16 +35,20 @@ void main(){
 								The votes are incremented as the bits are set to 1.
 								The counting stops when the stop pin is set to zero.
 	Also this function interfaces with the LCD to create the home display. */
+  delay(142);
+  lcd_port = 0x00;  // Set the output port to zero.
 	start_pin = stop_pin = 1;
+  party_1 = party_2 = party_3 = party_4 = 1;
 	vote_1 = vote_2 = vote_3 = vote_4 = 0;
-	party_1 = party_2 = party_3 = party_4 = 1;
 	
-	lcd_cmd(0x38); delay(msec);
-	lcd_cmd(0x0E); delay(msec);
-	lcd_cmd(0x01); delay(msec);
-	lcd_cmd(0x80); delay(msec);
+	
+	lcd_cmd(0x38); delay(1);
+	lcd_cmd(0x0E); delay(1);
+	lcd_cmd(0x01); delay(1);
+  lcd_cmd(0x06); delay(1);
+	lcd_cmd(0x80); delay(1);
 	lcd_str( "    WELCOME!    " ); delay(msec);
-	lcd_cmd(0x01); lcd_cmd(0x80); delay(msec);
+	lcd_cmd(0x01); lcd_cmd(0x80); delay(1);
 	lcd_str(" Press START "); delay(msec);
 	lcd_cmd(0xC0); delay(msec);
 	lcd_str(" To Vote "); delay(msec);
@@ -68,8 +72,8 @@ void main(){
 
 void delay(int delay_time){  // Time delay function
 	int j,k;
-	for(j=0;j<=delay_time;j++){
-		for(k=0;k<=1000;k++);}
+	for(j = 0;j < delay_time; j++){
+		for(k = 0;k < 1275; k++);}
 }
 
 void lcd_cmd(unsigned char cmd){
@@ -77,30 +81,33 @@ void lcd_cmd(unsigned char cmd){
 	@PARAMS: cmd: The command to be written to the LCD.
 	DESC: The enable pin is set to 1. Then the command register is selected.
 	Then the command is written to the register.*/
-	lcd_data_str_pin = cmd;
-	en = 1;
-	rs = 0;
-	rw = 0;
+	lcd_port = cmd;
+	rs = 0; 
+  en = 1;
 	delay(1);
 	en = 0;
 	return;
 }
 
-void lcd_str(char str[50]){
+void lcd_str(char *x){
 	/*LCD_STRING: To write a String to the LCD.
 	@PARAMS: str: The string to be written to the LCD, 50 bytes long atmost.
 	DESC: The enable pin is set to 1. The read/write pin is set to 0, to write.
 	Then the data register is selected.*/
-	int p;
-	for (p=0;str[p]!='\0';p++){
-		lcd_data_str_pin = str[p];
-		rw = 0;
-		rs = 1;
-		en = 1;
-		delay(1);
-		en = 0;
-	}
+	while (*x != '\0'){
+    lcd_data (*x);
+    delay(1);
+    x++;
+  }
 	return;
+}
+
+void lcd_data(unsigned char item){
+  lcd_port = item;
+  rs = 1;
+  en = 1;
+  delay(1);
+  en = 0;
 }
 
 void lcd_data_int(unsigned int vote){
@@ -118,11 +125,10 @@ void lcd_data_int(unsigned int vote){
 
 	for (p=0;p<=2;p++){
 		dig_ctrl_var = vote_amt[p]+48;
-		lcd_data_str_pin = dig_ctrl_var;
-		rw = 0;
+		lcd_port = dig_ctrl_var;
 		rs = 1;
 		en = 1;
-		delay(1);
+		delay(10);
 		en = 0;
 	}
 return;
