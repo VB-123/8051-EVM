@@ -3,4 +3,4 @@
 - The code performs perfectly in simulations in Proteus and kEIL uVision 5
 - Erratic when implemented in hardware
 ## Circuit Diagram
-<img width="565" alt="image" src="https://github.com/VB-123/8051-EVM/assets/127195382/e3626052-28bc-4119-82f5-0a63bbf69ba4">
+<img width="369" alt="image" src="https://github.com/VB-123/8051-EVM/assets/127195382/a915eff1-98be-4842-8cb5-3a187e8ff9db">
